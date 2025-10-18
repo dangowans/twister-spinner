@@ -166,10 +166,11 @@
     <script>
         const bodyParts = ['Left Foot', 'Right Foot', 'Left Hand', 'Right Hand'];
         const colors = ['blue', 'red', 'green', 'yellow'];
+        const SPIN_INTERVAL_MS = 10000; // 10 seconds
         
         let intervalId = null;
         let countdownId = null;
-        let secondsRemaining = 10;
+        let secondsRemaining = SPIN_INTERVAL_MS / 1000;
         
         const bodyPartElement = document.getElementById('bodyPart');
         const colorDisplayElement = document.getElementById('colorDisplay');
@@ -191,6 +192,25 @@
             }
         }
 
+        function updateTimer() {
+            timerElement.textContent = `Next spin in ${secondsRemaining} seconds`;
+        }
+
+        function startCountdown() {
+            if (countdownId) {
+                clearInterval(countdownId);
+            }
+            
+            countdownId = setInterval(() => {
+                secondsRemaining--;
+                if (secondsRemaining > 0) {
+                    updateTimer();
+                } else {
+                    secondsRemaining = SPIN_INTERVAL_MS / 1000;
+                }
+            }, 1000);
+        }
+
         function spin() {
             const bodyPart = getRandomElement(bodyParts);
             const color = getRandomElement(colors);
@@ -202,21 +222,8 @@
             const announcement = `${bodyPart}, ${color}`;
             speak(announcement);
             
-            secondsRemaining = 10;
+            secondsRemaining = SPIN_INTERVAL_MS / 1000;
             updateTimer();
-        }
-
-        function updateTimer() {
-            timerElement.textContent = `Next spin in ${secondsRemaining} seconds`;
-        }
-
-        function startCountdown() {
-            countdownId = setInterval(() => {
-                secondsRemaining--;
-                if (secondsRemaining > 0) {
-                    updateTimer();
-                }
-            }, 1000);
         }
 
         function start() {
@@ -230,7 +237,7 @@
             
             intervalId = setInterval(() => {
                 spin();
-            }, 10000);
+            }, SPIN_INTERVAL_MS);
         }
 
         function stop() {
