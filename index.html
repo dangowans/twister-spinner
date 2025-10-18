@@ -171,12 +171,40 @@
         let intervalId = null;
         let countdownId = null;
         let secondsRemaining = SPIN_INTERVAL_MS / 1000;
+        let wakeLock = null;
         
         const bodyPartElement = document.getElementById('bodyPart');
         const colorDisplayElement = document.getElementById('colorDisplay');
         const timerElement = document.getElementById('timer');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock acquired');
+                    
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock released');
+                    });
+                }
+            } catch (err) {
+                console.error(`Failed to acquire Wake Lock: ${err.message}`);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release()
+                    .then(() => {
+                        wakeLock = null;
+                    })
+                    .catch((err) => {
+                        console.error(`Failed to release Wake Lock: ${err.message}`);
+                    });
+            }
+        }
 
         function getRandomElement(array) {
             return array[Math.floor(Math.random() * array.length)];
@@ -233,6 +261,8 @@
             startBtn.style.display = 'none';
             stopBtn.style.display = 'inline-block';
             
+            requestWakeLock();
+            
             spin();
             startCountdown();
             
@@ -251,6 +281,8 @@
                 countdownId = null;
             }
             
+            releaseWakeLock();
+            
             startBtn.style.display = 'inline-block';
             stopBtn.style.display = 'none';
             
@@ -266,6 +298,13 @@
 
         startBtn.addEventListener('click', start);
         stopBtn.addEventListener('click', stop);
+
+        // Re-acquire wake lock when page becomes visible again
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && intervalId !== null) {
+                await requestWakeLock();
+            }
+        });
     </script>
 </body>
 </html>
