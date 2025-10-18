@@ -167,6 +167,7 @@
         const bodyParts = ['Left Foot', 'Right Foot', 'Left Hand', 'Right Hand'];
         const colors = ['blue', 'red', 'green', 'yellow'];
         const SPIN_INTERVAL_MS = 10000; // 10 seconds
+        const SPEECH_DELAY_MS = 100; // Delay to ensure speech synthesis is ready after cancel/resume
         
         let intervalId = null;
         let countdownId = null;
@@ -217,11 +218,29 @@
 
         function speak(text) {
             if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                utterance.volume = 1;
-                window.speechSynthesis.speak(utterance);
+                // Cancel any ongoing speech to prevent queueing issues
+                window.speechSynthesis.cancel();
+                
+                // Resume if paused (some browsers pause synthesis automatically)
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+                
+                // Small delay to ensure speech synthesis is ready after cancel/resume operations
+                // This prevents race conditions where speak() is called before the synthesis is ready
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+                    
+                    // Add error handler
+                    utterance.onerror = (event) => {
+                        console.error('Speech synthesis error:', event);
+                    };
+                    
+                    window.speechSynthesis.speak(utterance);
+                }, SPEECH_DELAY_MS);
             }
         }
 
