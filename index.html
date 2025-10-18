@@ -436,6 +436,7 @@
                     console.error('Error loading settings:', e);
                 }
             }
+            secondsRemaining = settings.interval;
             updateIntervalDisplay();
         }
         
@@ -453,10 +454,11 @@
         }
         
         const SPEECH_DELAY_MS = 100; // Delay to ensure speech synthesis is ready after cancel/resume
+        const RESTART_DELAY_MS = 100; // Delay to ensure clean restart after settings change
         
         let intervalId = null;
         let countdownId = null;
-        let secondsRemaining = settings.interval;
+        let secondsRemaining;
         let wakeLock = null;
         
         const bodyPartElement = document.getElementById('bodyPart');
@@ -662,8 +664,14 @@
                 stop();
             }
             
-            // Update settings
-            settings.interval = parseInt(intervalRange.value);
+            // Validate and update settings
+            const newInterval = parseInt(intervalRange.value);
+            if (isNaN(newInterval) || newInterval < 3 || newInterval > 30) {
+                console.error('Invalid interval value:', intervalRange.value);
+                return;
+            }
+            
+            settings.interval = newInterval;
             settings.voiceEnabled = voiceToggle.classList.contains('active');
             
             // Save to localStorage
@@ -677,7 +685,7 @@
             
             // Restart if was running
             if (wasRunning) {
-                setTimeout(() => start(), 100);
+                setTimeout(() => start(), RESTART_DELAY_MS);
             }
         });
         
