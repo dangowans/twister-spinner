@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twister Spinner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .display {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin: 30px 0;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .body-part {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .color {
+            font-size: 3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px 30px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .color.blue {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .color.red {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .color.green {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .color.yellow {
+            background-color: #FFEB3B;
+            color: #333;
+        }
+
+        .timer {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #startBtn:hover {
+            background-color: #45a049;
+        }
+
+        #stopBtn {
+            background-color: #f44336;
+            color: white;
+            display: none;
+        }
+
+        #stopBtn:hover {
+            background-color: #da190b;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Twister Spinner</h1>
+        
+        <div class="display">
+            <div class="body-part" id="bodyPart">Press Start to Begin</div>
+            <div class="color" id="colorDisplay"></div>
+            <div class="timer" id="timer"></div>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn">Stop</button>
+        </div>
+
+        <div class="instructions">
+            Click Start to begin the game. Every 10 seconds, a new combination of body part and color will be announced.
+        </div>
+    </div>
+
+    <script>
+        const bodyParts = ['Left Foot', 'Right Foot', 'Left Hand', 'Right Hand'];
+        const colors = ['blue', 'red', 'green', 'yellow'];
+        const SPIN_INTERVAL_MS = 10000; // 10 seconds
+        
+        let intervalId = null;
+        let countdownId = null;
+        let secondsRemaining = SPIN_INTERVAL_MS / 1000;
+        
+        const bodyPartElement = document.getElementById('bodyPart');
+        const colorDisplayElement = document.getElementById('colorDisplay');
+        const timerElement = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function updateTimer() {
+            timerElement.textContent = `Next spin in ${secondsRemaining} seconds`;
+        }
+
+        function startCountdown() {
+            if (countdownId) {
+                clearInterval(countdownId);
+            }
+            
+            countdownId = setInterval(() => {
+                secondsRemaining--;
+                if (secondsRemaining > 0) {
+                    updateTimer();
+                } else {
+                    secondsRemaining = SPIN_INTERVAL_MS / 1000;
+                    updateTimer();
+                }
+            }, 1000);
+        }
+
+        function spin() {
+            const bodyPart = getRandomElement(bodyParts);
+            const color = getRandomElement(colors);
+            
+            bodyPartElement.textContent = bodyPart;
+            colorDisplayElement.textContent = color;
+            colorDisplayElement.className = `color ${color}`;
+            
+            const announcement = `${bodyPart}, ${color}`;
+            speak(announcement);
+            
+            secondsRemaining = SPIN_INTERVAL_MS / 1000;
+            updateTimer();
+        }
+
+        function start() {
+            if (intervalId) return;
+            
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            
+            spin();
+            startCountdown();
+            
+            intervalId = setInterval(() => {
+                spin();
+            }, SPIN_INTERVAL_MS);
+        }
+
+        function stop() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            if (countdownId) {
+                clearInterval(countdownId);
+                countdownId = null;
+            }
+            
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            
+            bodyPartElement.textContent = 'Press Start to Begin';
+            colorDisplayElement.textContent = '';
+            colorDisplayElement.className = 'color';
+            timerElement.textContent = '';
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        startBtn.addEventListener('click', start);
+        stopBtn.addEventListener('click', stop);
+    </script>
+</body>
+</html>
