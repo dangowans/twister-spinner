@@ -30,6 +30,7 @@
             align-items: center;
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px;
         }
 
         .container {
@@ -40,12 +41,61 @@
             text-align: center;
             max-width: 500px;
             width: 90%;
+            position: relative;
+        }
+
+        .header {
+            position: relative;
+            margin-bottom: 30px;
         }
 
         h1 {
             color: #333;
-            margin-bottom: 30px;
             font-size: 2.5em;
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: #5568d3;
+            transform: rotate(90deg);
+        }
+
+        /* Landscape responsive adjustments */
+        @media (orientation: landscape) and (max-height: 700px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 20px;
+                max-width: 90%;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 15px;
+            }
+            
+            .header {
+                margin-bottom: 15px;
+            }
         }
 
         .display {
@@ -60,11 +110,26 @@
             align-items: center;
         }
 
+        @media (orientation: landscape) and (max-height: 700px) {
+            .display {
+                padding: 20px 20px;
+                margin: 15px 0;
+                min-height: 100px;
+            }
+        }
+
         .body-part {
             font-size: 2em;
             font-weight: bold;
             color: #333;
             margin-bottom: 15px;
+        }
+
+        @media (orientation: landscape) and (max-height: 700px) {
+            .body-part {
+                font-size: 1.5em;
+                margin-bottom: 10px;
+            }
         }
 
         .color {
@@ -74,6 +139,13 @@
             padding: 10px 30px;
             border-radius: 10px;
             display: inline-block;
+        }
+
+        @media (orientation: landscape) and (max-height: 700px) {
+            .color {
+                font-size: 2em;
+                padding: 8px 20px;
+            }
         }
 
         .color.blue {
@@ -153,11 +225,154 @@
             font-size: 0.9em;
             line-height: 1.6;
         }
+
+        @media (orientation: landscape) and (max-height: 700px) {
+            .instructions {
+                margin-top: 15px;
+                font-size: 0.8em;
+            }
+        }
+
+        /* Settings Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .setting-group label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .setting-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .setting-value {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 32px;
+        }
+
+        .toggle-label {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            padding: 10px 25px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background-color: #5568d3;
+        }
+
+        .modal-btn.secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .modal-btn.secondary:hover {
+            background-color: #d0d0d0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Twister Spinner</h1>
+        <div class="header">
+            <h1>Twister Spinner</h1>
+            <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+        </div>
         
         <div class="display">
             <div class="body-part" id="bodyPart">Press Start to Begin</div>
@@ -171,19 +386,79 @@
         </div>
 
         <div class="instructions">
-            Click Start to begin the game. Every 10 seconds, a new combination of body part and color will be announced.
+            Click Start to begin the game. Every <span id="intervalDisplay">10</span> seconds, a new combination of body part and color will be announced.
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h2>Settings</h2>
+            
+            <div class="setting-group">
+                <label for="intervalRange">Time Between Calls</label>
+                <input type="range" id="intervalRange" min="3" max="30" value="10" step="1">
+                <div class="setting-value"><span id="intervalValue">10</span> seconds</div>
+            </div>
+
+            <div class="setting-group">
+                <label>Voice Announcements</label>
+                <div class="toggle-container">
+                    <div class="toggle-switch active" id="voiceToggle"></div>
+                    <span class="toggle-label" id="voiceLabel">On</span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" id="cancelBtn">Cancel</button>
+                <button class="modal-btn primary" id="saveBtn">Save</button>
+            </div>
         </div>
     </div>
 
     <script>
         const bodyParts = ['Left Foot', 'Right Foot', 'Left Hand', 'Right Hand'];
         const colors = ['blue', 'red', 'green', 'yellow'];
-        const SPIN_INTERVAL_MS = 10000; // 10 seconds
+        
+        // Settings with defaults
+        let settings = {
+            interval: 10, // seconds
+            voiceEnabled: true
+        };
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('twisterSettings');
+            if (saved) {
+                try {
+                    settings = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading settings:', e);
+                }
+            }
+            secondsRemaining = settings.interval;
+            updateIntervalDisplay();
+        }
+        
+        // Save settings to localStorage
+        function saveSettings() {
+            localStorage.setItem('twisterSettings', JSON.stringify(settings));
+        }
+        
+        // Update interval display in instructions
+        function updateIntervalDisplay() {
+            const intervalDisplay = document.getElementById('intervalDisplay');
+            if (intervalDisplay) {
+                intervalDisplay.textContent = settings.interval;
+            }
+        }
+        
         const SPEECH_DELAY_MS = 100; // Delay to ensure speech synthesis is ready after cancel/resume
+        const RESTART_DELAY_MS = 100; // Delay to ensure clean restart after settings change
         
         let intervalId = null;
         let countdownId = null;
-        let secondsRemaining = SPIN_INTERVAL_MS / 1000;
+        let secondsRemaining;
         let wakeLock = null;
         
         const bodyPartElement = document.getElementById('bodyPart');
@@ -191,6 +466,19 @@
         const timerElement = document.getElementById('timer');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        
+        // Settings modal elements
+        const settingsBtn = document.getElementById('settingsBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const intervalRange = document.getElementById('intervalRange');
+        const intervalValue = document.getElementById('intervalValue');
+        const voiceToggle = document.getElementById('voiceToggle');
+        const voiceLabel = document.getElementById('voiceLabel');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        // Initialize settings
+        loadSettings();
 
         async function requestWakeLock() {
             try {
@@ -229,7 +517,7 @@
         }
 
         function speak(text) {
-            if ('speechSynthesis' in window) {
+            if ('speechSynthesis' in window && settings.voiceEnabled) {
                 // Cancel any ongoing speech to prevent queueing issues
                 window.speechSynthesis.cancel();
                 
@@ -270,7 +558,7 @@
                 if (secondsRemaining > 0) {
                     updateTimer();
                 } else {
-                    secondsRemaining = SPIN_INTERVAL_MS / 1000;
+                    secondsRemaining = settings.interval;
                     updateTimer();
                 }
             }, 1000);
@@ -287,7 +575,7 @@
             const announcement = `${bodyPart}, ${color}`;
             speak(announcement);
             
-            secondsRemaining = SPIN_INTERVAL_MS / 1000;
+            secondsRemaining = settings.interval;
             updateTimer();
         }
 
@@ -304,7 +592,7 @@
             
             intervalId = setInterval(() => {
                 spin();
-            }, SPIN_INTERVAL_MS);
+            }, settings.interval * 1000);
         }
 
         function stop() {
@@ -334,6 +622,84 @@
 
         startBtn.addEventListener('click', start);
         stopBtn.addEventListener('click', stop);
+        
+        // Settings modal handlers
+        settingsBtn.addEventListener('click', () => {
+            // Update modal with current settings
+            intervalRange.value = settings.interval;
+            intervalValue.textContent = settings.interval;
+            
+            if (settings.voiceEnabled) {
+                voiceToggle.classList.add('active');
+                voiceLabel.textContent = 'On';
+            } else {
+                voiceToggle.classList.remove('active');
+                voiceLabel.textContent = 'Off';
+            }
+            
+            modalOverlay.classList.add('active');
+        });
+        
+        // Update interval value display when slider changes
+        intervalRange.addEventListener('input', (e) => {
+            intervalValue.textContent = e.target.value;
+        });
+        
+        // Toggle voice switch
+        voiceToggle.addEventListener('click', () => {
+            voiceToggle.classList.toggle('active');
+            if (voiceToggle.classList.contains('active')) {
+                voiceLabel.textContent = 'On';
+            } else {
+                voiceLabel.textContent = 'Off';
+            }
+        });
+        
+        // Save settings
+        saveBtn.addEventListener('click', () => {
+            const wasRunning = intervalId !== null;
+            
+            // Stop if running
+            if (wasRunning) {
+                stop();
+            }
+            
+            // Validate and update settings
+            const newInterval = parseInt(intervalRange.value);
+            if (isNaN(newInterval) || newInterval < 3 || newInterval > 30) {
+                console.error('Invalid interval value:', intervalRange.value);
+                return;
+            }
+            
+            settings.interval = newInterval;
+            settings.voiceEnabled = voiceToggle.classList.contains('active');
+            
+            // Save to localStorage
+            saveSettings();
+            
+            // Update display
+            updateIntervalDisplay();
+            
+            // Close modal
+            modalOverlay.classList.remove('active');
+            
+            // Restart if was running
+            if (wasRunning) {
+                setTimeout(() => start(), RESTART_DELAY_MS);
+            }
+        });
+        
+        // Cancel settings
+        cancelBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+        });
+        
+        // Close modal when clicking outside
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+            }
+        });
 
         // Re-acquire wake lock when page becomes visible again
         document.addEventListener('visibilitychange', async () => {
