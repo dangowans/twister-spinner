@@ -1,4 +1,4 @@
-# Twister Spinner
+# <img src="./favicons/favicon-32x32.png" alt="Twister Spinner Icon" width="32" height="32"> Twister Spinner
 
 An automatic Twister spinner that randomly selects body parts and colors for the classic Twister game.
 
