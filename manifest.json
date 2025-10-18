@@ -2,7 +2,7 @@
   "name": "Twister Spinner",
   "short_name": "Twister",
   "description": "An automatic Twister spinner that randomly selects body parts and colors for the classic Twister game",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
