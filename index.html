@@ -588,7 +588,7 @@
                         if (event.error === 'synthesis-failed') {
                             voicesLoaded = false;
                             console.log('Attempting to reload voices...');
-                            window.speechSynthesis.getVoices();
+                            checkAndLoadVoices();
                         }
                     };
                     
