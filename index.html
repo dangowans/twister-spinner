@@ -338,6 +338,27 @@
             font-size: 1em;
         }
 
+        .select-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #333;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .select-group select:hover {
+            border-color: #667eea;
+        }
+
+        .select-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -416,6 +437,14 @@
                 </div>
             </div>
 
+            <div class="setting-group select-group">
+                <label for="audioModeSelect">Audio Mode</label>
+                <select id="audioModeSelect">
+                    <option value="synthesis">Speech Synthesis</option>
+                    <option value="prerecorded">Prerecorded Audio</option>
+                </select>
+            </div>
+
             <div class="modal-buttons">
                 <button class="modal-btn secondary" id="cancelBtn">Cancel</button>
                 <button class="modal-btn primary" id="saveBtn">Save</button>
@@ -430,7 +459,24 @@
         // Settings with defaults
         let settings = {
             interval: 10, // seconds
-            voiceEnabled: true
+            voiceEnabled: true,
+            audioMode: 'synthesis' // 'synthesis' or 'prerecorded'
+        };
+        
+        // Audio file mappings
+        const audioFiles = {
+            colors: {
+                'blue': 'audio/colors/blue.wav',
+                'red': 'audio/colors/red.wav',
+                'green': 'audio/colors/green.wav',
+                'yellow': 'audio/colors/yellow.wav'
+            },
+            bodyParts: {
+                'Left Foot': 'audio/bodyparts/left-foot.wav',
+                'Right Foot': 'audio/bodyparts/right-foot.wav',
+                'Left Hand': 'audio/bodyparts/left-hand.wav',
+                'Right Hand': 'audio/bodyparts/right-hand.wav'
+            }
         };
         
         // Load settings from localStorage
@@ -482,6 +528,7 @@
         const intervalValue = document.getElementById('intervalValue');
         const voiceToggle = document.getElementById('voiceToggle');
         const voiceLabel = document.getElementById('voiceLabel');
+        const audioModeSelect = document.getElementById('audioModeSelect');
         const saveBtn = document.getElementById('saveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         
@@ -555,7 +602,55 @@
         }
 
         function speak(text) {
-            if ('speechSynthesis' in window && settings.voiceEnabled) {
+            if (!settings.voiceEnabled) {
+                return;
+            }
+
+            if (settings.audioMode === 'prerecorded') {
+                playPrerecordedAudio(text);
+            } else if (settings.audioMode === 'synthesis') {
+                playSynthesizedSpeech(text);
+            }
+        }
+
+        function playPrerecordedAudio(text) {
+            // Parse the announcement text (e.g., "Left Foot, blue")
+            const parts = text.split(', ');
+            if (parts.length !== 2) {
+                console.error('Invalid announcement format:', text);
+                return;
+            }
+
+            const bodyPart = parts[0];
+            const color = parts[1];
+
+            // Get audio file paths
+            const bodyPartFile = audioFiles.bodyParts[bodyPart];
+            const colorFile = audioFiles.colors[color];
+
+            if (!bodyPartFile || !colorFile) {
+                console.error('Audio files not found for:', bodyPart, color);
+                return;
+            }
+
+            // Create audio elements
+            const bodyPartAudio = new Audio(bodyPartFile);
+            const colorAudio = new Audio(colorFile);
+
+            // Play body part, then color
+            bodyPartAudio.play().then(() => {
+                bodyPartAudio.onended = () => {
+                    colorAudio.play().catch(err => {
+                        console.error('Error playing color audio:', err);
+                    });
+                };
+            }).catch(err => {
+                console.error('Error playing body part audio:', err);
+            });
+        }
+
+        function playSynthesizedSpeech(text) {
+            if ('speechSynthesis' in window) {
                 // Check if voices are loaded before attempting to speak
                 if (!voicesLoaded) {
                     console.warn('Speech synthesis voices not yet loaded, attempting to load...');
@@ -690,6 +785,8 @@
                 voiceLabel.textContent = 'Off';
             }
             
+            audioModeSelect.value = settings.audioMode;
+            
             modalOverlay.classList.add('active');
         });
         
@@ -726,6 +823,7 @@
             
             settings.interval = newInterval;
             settings.voiceEnabled = voiceToggle.classList.contains('active');
+            settings.audioMode = audioModeSelect.value;
             
             // Save to localStorage
             saveSettings();
