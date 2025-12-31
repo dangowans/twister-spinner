@@ -580,11 +580,8 @@
             // Set the message
             toastElement.textContent = message;
             
-            // Reset classes and add the type class
-            toastElement.className = 'toast';
-            if (type) {
-                toastElement.classList.add(type);
-            }
+            // Set classes in one operation
+            toastElement.className = `toast ${type || ''}`.trim();
             
             // Show the toast
             toastElement.classList.add('show');
@@ -627,7 +624,7 @@
             }
             
             // Show toast notification to inform the user
-            showToast('Speech synthesis unavailable. Switched to prerecorded audio.', 'warning', 5000);
+            showToast('Speech synthesis unavailable. Switched to prerecorded audio.', 'warning');
         }
         
         // Initialize speech synthesis and wait for voices to load
