@@ -581,7 +581,7 @@
             toastElement.textContent = message;
             
             // Set classes in one operation
-            toastElement.className = `toast ${type || ''}`.trim();
+            toastElement.className = `toast ${type}`;
             
             // Show the toast
             toastElement.classList.add('show');
@@ -638,6 +638,11 @@
                 // Set a timeout to fallback to prerecorded audio if voices don't load
                 // Only set timeout if current mode is synthesis
                 if (settings.audioMode === 'synthesis') {
+                    // Clear any existing timeout to prevent multiple fallback attempts
+                    if (voiceLoadTimeout) {
+                        clearTimeout(voiceLoadTimeout);
+                    }
+                    
                     voiceLoadTimeout = setTimeout(() => {
                         if (!voicesLoaded) {
                             fallbackToPrerecordedAudio();
@@ -654,8 +659,11 @@
                 window.speechSynthesis.getVoices();
             } else {
                 // If speech synthesis is not supported at all, fallback immediately
-                console.warn('Speech synthesis not supported in this browser, switching to prerecorded audio');
-                fallbackToPrerecordedAudio();
+                // Only fallback if current mode is synthesis
+                if (settings.audioMode === 'synthesis') {
+                    console.warn('Speech synthesis not supported in this browser, switching to prerecorded audio');
+                    fallbackToPrerecordedAudio();
+                }
             }
         }
         
