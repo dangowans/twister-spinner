@@ -467,6 +467,7 @@
         let countdownId = null;
         let secondsRemaining;
         let wakeLock = null;
+        let voicesLoaded = false;
         
         const bodyPartElement = document.getElementById('bodyPart');
         const colorDisplayElement = document.getElementById('colorDisplay');
@@ -486,6 +487,33 @@
         
         // Initialize settings
         loadSettings();
+        
+        // Initialize speech synthesis and wait for voices to load
+        function initializeSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                // Check if voices are already loaded
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    voicesLoaded = true;
+                    console.log('Speech synthesis voices loaded:', voices.length);
+                }
+                
+                // Listen for voices changed event (Chrome on Linux needs this)
+                window.speechSynthesis.onvoiceschanged = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        voicesLoaded = true;
+                        console.log('Speech synthesis voices loaded:', voices.length);
+                    }
+                };
+                
+                // Trigger voice loading by calling getVoices()
+                window.speechSynthesis.getVoices();
+            }
+        }
+        
+        // Initialize speech synthesis on page load
+        initializeSpeechSynthesis();
 
         async function requestWakeLock() {
             try {
@@ -525,6 +553,18 @@
 
         function speak(text) {
             if ('speechSynthesis' in window && settings.voiceEnabled) {
+                // Check if voices are loaded before attempting to speak
+                if (!voicesLoaded) {
+                    console.warn('Speech synthesis voices not yet loaded, attempting to load...');
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        voicesLoaded = true;
+                    } else {
+                        console.error('No voices available for speech synthesis');
+                        return; // Don't attempt to speak if no voices are available
+                    }
+                }
+                
                 // Cancel any ongoing speech to prevent queueing issues
                 window.speechSynthesis.cancel();
                 
@@ -544,6 +584,12 @@
                     // Add error handler
                     utterance.onerror = (event) => {
                         console.error('Speech synthesis error:', event);
+                        // If synthesis fails due to missing voices, try to reload them
+                        if (event.error === 'synthesis-failed') {
+                            voicesLoaded = false;
+                            console.log('Attempting to reload voices...');
+                            window.speechSynthesis.getVoices();
+                        }
                     };
                     
                     window.speechSynthesis.speak(utterance);
