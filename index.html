@@ -488,23 +488,26 @@
         // Initialize settings
         loadSettings();
         
+        // Helper function to check and load voices
+        function checkAndLoadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                voicesLoaded = true;
+                console.log('Speech synthesis voices loaded:', voices.length);
+                return true;
+            }
+            return false;
+        }
+        
         // Initialize speech synthesis and wait for voices to load
         function initializeSpeechSynthesis() {
             if ('speechSynthesis' in window) {
                 // Check if voices are already loaded
-                const voices = window.speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    voicesLoaded = true;
-                    console.log('Speech synthesis voices loaded:', voices.length);
-                }
+                checkAndLoadVoices();
                 
                 // Listen for voices changed event (Chrome on Linux needs this)
                 window.speechSynthesis.onvoiceschanged = () => {
-                    const voices = window.speechSynthesis.getVoices();
-                    if (voices.length > 0) {
-                        voicesLoaded = true;
-                        console.log('Speech synthesis voices loaded:', voices.length);
-                    }
+                    checkAndLoadVoices();
                 };
                 
                 // Trigger voice loading by calling getVoices()
@@ -556,10 +559,7 @@
                 // Check if voices are loaded before attempting to speak
                 if (!voicesLoaded) {
                     console.warn('Speech synthesis voices not yet loaded, attempting to load...');
-                    const voices = window.speechSynthesis.getVoices();
-                    if (voices.length > 0) {
-                        voicesLoaded = true;
-                    } else {
+                    if (!checkAndLoadVoices()) {
                         console.error('No voices available for speech synthesis');
                         return; // Don't attempt to speak if no voices are available
                     }
