@@ -594,8 +594,7 @@
             } else {
                 // If speech synthesis is not supported at all, fallback immediately
                 console.warn('Speech synthesis not supported in this browser, switching to prerecorded audio');
-                settings.audioMode = 'prerecorded';
-                saveSettings();
+                fallbackToPrerecordedAudio();
             }
         }
         
