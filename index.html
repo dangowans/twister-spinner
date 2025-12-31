@@ -393,6 +393,41 @@
         .modal-btn.secondary:hover {
             background-color: #d0d0d0;
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 0.95em;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background-color: #f44336;
+        }
+
+        .toast.warning {
+            background-color: #ff9800;
+        }
+
+        .toast.info {
+            background-color: #2196F3;
+        }
     </style>
 </head>
 <body>
@@ -451,6 +486,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
     <script>
         const bodyParts = ['Left Foot', 'Right Foot', 'Left Hand', 'Right Hand'];
@@ -514,6 +552,8 @@
         let secondsRemaining;
         let wakeLock = null;
         let voicesLoaded = false;
+        let voiceLoadTimeout = null;
+        const VOICE_LOAD_TIMEOUT_MS = 3000; // Wait 3 seconds for voices to load
         
         const bodyPartElement = document.getElementById('bodyPart');
         const colorDisplayElement = document.getElementById('colorDisplay');
@@ -531,6 +571,26 @@
         const audioModeSelect = document.getElementById('audioModeSelect');
         const saveBtn = document.getElementById('saveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const toastElement = document.getElementById('toast');
+        
+        // Toast notification function
+        function showToast(message, type = 'info', duration = 5000) {
+            if (!toastElement) return;
+            
+            // Set the message
+            toastElement.textContent = message;
+            
+            // Set classes in one operation
+            toastElement.className = `toast ${type}`;
+            
+            // Show the toast
+            toastElement.classList.add('show');
+            
+            // Hide the toast after duration
+            setTimeout(() => {
+                toastElement.classList.remove('show');
+            }, duration);
+        }
         
         // Initialize settings
         loadSettings();
@@ -541,16 +601,54 @@
             if (voices.length > 0) {
                 voicesLoaded = true;
                 console.log('Speech synthesis voices loaded:', voices.length);
+                
+                // Clear the timeout since voices loaded successfully
+                if (voiceLoadTimeout) {
+                    clearTimeout(voiceLoadTimeout);
+                    voiceLoadTimeout = null;
+                }
                 return true;
             }
             return false;
+        }
+        
+        // Fallback to prerecorded audio if voices fail to load
+        function fallbackToPrerecordedAudio() {
+            console.warn('Speech synthesis voices failed to load within timeout, switching to prerecorded audio');
+            settings.audioMode = 'prerecorded';
+            saveSettings();
+            
+            // Update the UI select element if modal is open
+            if (audioModeSelect) {
+                audioModeSelect.value = 'prerecorded';
+            }
+            
+            // Show toast notification to inform the user
+            showToast('Speech synthesis unavailable. Switched to prerecorded audio.', 'warning');
         }
         
         // Initialize speech synthesis and wait for voices to load
         function initializeSpeechSynthesis() {
             if ('speechSynthesis' in window) {
                 // Check if voices are already loaded
-                checkAndLoadVoices();
+                if (checkAndLoadVoices()) {
+                    return; // Voices already available
+                }
+                
+                // Set a timeout to fallback to prerecorded audio if voices don't load
+                // Only set timeout if current mode is synthesis
+                if (settings.audioMode === 'synthesis') {
+                    // Clear any existing timeout to prevent multiple fallback attempts
+                    if (voiceLoadTimeout) {
+                        clearTimeout(voiceLoadTimeout);
+                    }
+                    
+                    voiceLoadTimeout = setTimeout(() => {
+                        if (!voicesLoaded) {
+                            fallbackToPrerecordedAudio();
+                        }
+                    }, VOICE_LOAD_TIMEOUT_MS);
+                }
                 
                 // Listen for voices changed event (Chrome on Linux needs this)
                 window.speechSynthesis.onvoiceschanged = () => {
@@ -559,6 +657,13 @@
                 
                 // Trigger voice loading by calling getVoices()
                 window.speechSynthesis.getVoices();
+            } else {
+                // If speech synthesis is not supported at all, fallback immediately
+                // Only fallback if current mode is synthesis
+                if (settings.audioMode === 'synthesis') {
+                    console.warn('Speech synthesis not supported in this browser, switching to prerecorded audio');
+                    fallbackToPrerecordedAudio();
+                }
             }
         }
         
