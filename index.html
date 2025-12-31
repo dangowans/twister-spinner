@@ -393,6 +393,41 @@
         .modal-btn.secondary:hover {
             background-color: #d0d0d0;
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 0.95em;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background-color: #f44336;
+        }
+
+        .toast.warning {
+            background-color: #ff9800;
+        }
+
+        .toast.info {
+            background-color: #2196F3;
+        }
     </style>
 </head>
 <body>
@@ -451,6 +486,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
     <script>
         const bodyParts = ['Left Foot', 'Right Foot', 'Left Hand', 'Right Hand'];
@@ -533,6 +571,29 @@
         const audioModeSelect = document.getElementById('audioModeSelect');
         const saveBtn = document.getElementById('saveBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const toastElement = document.getElementById('toast');
+        
+        // Toast notification function
+        function showToast(message, type = 'info', duration = 5000) {
+            if (!toastElement) return;
+            
+            // Set the message
+            toastElement.textContent = message;
+            
+            // Reset classes and add the type class
+            toastElement.className = 'toast';
+            if (type) {
+                toastElement.classList.add(type);
+            }
+            
+            // Show the toast
+            toastElement.classList.add('show');
+            
+            // Hide the toast after duration
+            setTimeout(() => {
+                toastElement.classList.remove('show');
+            }, duration);
+        }
         
         // Initialize settings
         loadSettings();
@@ -564,6 +625,9 @@
             if (audioModeSelect) {
                 audioModeSelect.value = 'prerecorded';
             }
+            
+            // Show toast notification to inform the user
+            showToast('Speech synthesis unavailable. Switched to prerecorded audio.', 'warning', 5000);
         }
         
         // Initialize speech synthesis and wait for voices to load
