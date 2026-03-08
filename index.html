@@ -522,7 +522,12 @@
             const saved = localStorage.getItem('twisterSettings');
             if (saved) {
                 try {
-                    settings = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    settings = {
+                        interval: (typeof parsed.interval === 'number' && parsed.interval >= MIN_INTERVAL && parsed.interval <= MAX_INTERVAL) ? parsed.interval : settings.interval,
+                        voiceEnabled: typeof parsed.voiceEnabled === 'boolean' ? parsed.voiceEnabled : settings.voiceEnabled,
+                        audioMode: (parsed.audioMode === 'synthesis' || parsed.audioMode === 'prerecorded') ? parsed.audioMode : settings.audioMode
+                    };
                 } catch (e) {
                     console.error('Error loading settings:', e);
                 }
@@ -546,6 +551,8 @@
         
         const SPEECH_DELAY_MS = 100; // Delay to ensure speech synthesis is ready after cancel/resume
         const RESTART_DELAY_MS = 100; // Delay to ensure clean restart after settings change
+        const MIN_INTERVAL = 3; // Minimum seconds between spins
+        const MAX_INTERVAL = 30; // Maximum seconds between spins
         
         let intervalId = null;
         let countdownId = null;
@@ -706,6 +713,9 @@
             return array[Math.floor(Math.random() * array.length)];
         }
 
+        // Track last combination to avoid immediate repeats
+        let lastCombination = null;
+
         function speak(text) {
             if (!settings.voiceEnabled) {
                 return;
@@ -820,9 +830,16 @@
         }
 
         function spin() {
-            const bodyPart = getRandomElement(bodyParts);
-            const color = getRandomElement(colors);
-            
+            let bodyPart, color, combination;
+            let attempts = 0;
+            do {
+                bodyPart = getRandomElement(bodyParts);
+                color = getRandomElement(colors);
+                combination = `${bodyPart},${color}`;
+                attempts++;
+            } while (combination === lastCombination && attempts < 5);
+            lastCombination = combination;
+
             bodyPartElement.textContent = bodyPart;
             colorDisplayElement.textContent = color;
             colorDisplayElement.className = `color ${color}`;
@@ -862,6 +879,8 @@
             
             releaseWakeLock();
             
+            lastCombination = null;
+
             startBtn.style.display = 'inline-block';
             stopBtn.style.display = 'none';
             
@@ -923,7 +942,7 @@
             
             // Validate and update settings
             const newInterval = parseInt(intervalRange.value);
-            if (isNaN(newInterval) || newInterval < 3 || newInterval > 30) {
+            if (isNaN(newInterval) || newInterval < MIN_INTERVAL || newInterval > MAX_INTERVAL) {
                 console.error('Invalid interval value:', intervalRange.value);
                 return;
             }
